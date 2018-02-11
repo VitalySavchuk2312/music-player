@@ -84,9 +84,9 @@ export default class App extends Component {
         },
       ],
       searchSongHistory: [],
-      playPauseIcon: '../../includes/img/play.png',
+      playPauseIcon: '../../includes/img/play.svg',
       counter: 0,
-      // to detect whhat songs were clicked by user
+      // to detect which songs were clicked by user
       clickedOn: [],
       // check if the song is playing
       paused: true
@@ -97,14 +97,20 @@ export default class App extends Component {
     return(
       // dynamic src attribute for img to change the song when user clicks the next button
       <div className="player-container">
-        <img src="../../includes/img/previous.png" alt="previos" className="player-container__previous-img" onClick={this.previousSong.bind(this)} />
-        <img src={this.state.playPauseIcon} alt="play" className="player-container__play-img" onClick={this.switchSong.bind(this)} />
-        <img src="../../includes/img/next.png" alt="next" className="player-container__next-img" onClick={this.nextSong.bind(this)} />
-        <input type="range" min="0" max="100" className="player-container__progress" onMouseDown={this.rewindSong.bind(this)} /> <br />
-        <img src="../../includes/img/volume.png" alt="volume" className="player-container__volume-img" />
-        <input type="range" min="0" max="100" className="player-container__volume" onMouseMove={this.changeVolume.bind(this)}/>
         <Search findSongInTheList={this.findSongInTheList.bind(this)} list={this.state.songsDetails} />
+        <section className="player-container__btns-container">
+          <img src="../../includes/img/previous.svg" alt="previos" className="player-container__previous-img" onClick={this.previousSong.bind(this)} />
+          <img src={this.state.playPauseIcon} alt="play" className="player-container__play-img" onClick={this.switchSong.bind(this)} />
+          <img src="../../includes/img/next.svg" alt="next" className="player-container__next-img" onClick={this.nextSong.bind(this)} />
+        </section>
+        <section className="player-container__progress-container">
+          <input type="range" defaultValue="0" className="player-container__progress" onClick={this.rewindSong.bind(this)} /> <br />
+        </section>
         <SongsList setSongDuration={this.setSongDuration.bind(this)} audio={this.state.audio} list={this.state.songsDetails} pickSongFromList={this.pickSongFromList.bind(this)} changeActiveSong={this.changeActiveSong.bind(this)} />
+        <section className="player-container__volume-container">
+          <img src="../../includes/img/volume_on.svg" alt="volume" className="player-container__volume-img" />
+          <input type="range" min="0" max="100" className="player-container__volume" onMouseMove={this.changeVolume.bind(this)}/>
+        </section>
       </div>
     );
   }
@@ -114,14 +120,14 @@ export default class App extends Component {
     if(this.state.audio.paused) {
       this.state.audio.play();
       this.setState({
-        playPauseIcon: '../../includes/img/pause.png'
+        playPauseIcon: '../../includes/img/pause.svg'
       });
-      // show progress of playing current song
+      // show progress of playing current song (if input is not active, so give user possibility to efficiently drag indicator and rewind song)
       this.changeProgress();
     } else {
       this.state.audio.pause();
       this.setState({
-        playPauseIcon: '../../includes/img/play.png'
+        playPauseIcon: '../../includes/img/play.svg'
       })
     }
   }
@@ -131,7 +137,7 @@ export default class App extends Component {
     this.state.audio.pause();
     // change the button to a pause mode when sound is on
     this.setState({
-      playPauseIcon: '../../includes/img/pause.png'
+      playPauseIcon: '../../includes/img/pause.svg'
     });
     /* while counter is more than 0, continue execution.
        When it is 0, start from the end of list */
@@ -150,7 +156,10 @@ export default class App extends Component {
     }
     // change the source of previous song on the new one
     this.state.audio.src = this.state.songsDetails[this.state.counter].path;
-    this.changeProgress();
+    // show progress of playing current song (if input is not active, so give user possibility to efficiently drag indicator and rewind song)
+    if(document.activeElement == document.getElementsByClassName('player-container__progress')) {
+      this.changeProgress();
+    }
     this.state.audio.play();
   }
 
@@ -159,7 +168,7 @@ export default class App extends Component {
     this.state.audio.pause();
     // change the button to a pause mode when sound is on
     this.setState({
-      playPauseIcon: '../../includes/img/pause.png'
+      playPauseIcon: '../../includes/img/pause.svg'
     });
     /* while counter is less than array of songs, continue execution.
        When it is equil, start from the beggining of list */
@@ -178,7 +187,10 @@ export default class App extends Component {
     }
     // change the source of previous song on the new one
     this.state.audio.src = this.state.songsDetails[this.state.counter].path;
-    this.changeProgress();
+    // show progress of playing current song (if input is not active, so give user possibility to efficiently drag indicator and rewind song)
+    if(document.activeElement == document.getElementsByClassName('player-container__progress')) {
+      this.changeProgress();
+    }
     // finally play the song
     this.state.audio.play();
   }
@@ -190,14 +202,16 @@ export default class App extends Component {
   changeProgress(e) {
     this.state.audio.addEventListener('timeupdate', () => {
       const pos = this.state.audio.currentTime * (100 / this.state.audio.duration);
-      document.getElementsByClassName('player-container__progress')[0].value = pos;
+      if(document.activeElement != document.getElementsByClassName('player-container__progress')[0]) {
+        document.getElementsByClassName('player-container__progress')[0].value = pos;
+      }
     });
   }
 
   rewindSong(e) {
-    e.target.value = e.clientX - e.target.offsetLeft;
     const rewindTo = this.state.audio.duration * (e.target.value / 100);
     this.state.audio.currentTime = rewindTo;
+    this.changeProgress();
   }
 
   pickSongFromList(item) {
@@ -214,7 +228,7 @@ export default class App extends Component {
     if(item == this.state.clickedOn[this.state.clickedOn.length - 2] && this.state.paused == false) {
       // change the button to a pause mode when sound is on
       this.setState({
-        playPauseIcon: '../../includes/img/play.png'
+        playPauseIcon: '../../includes/img/play.svg'
       });
       if(this.state.counter < this.state.songsDetails.length - 1) {
         this.state.counter = chosenSong[0].id
@@ -229,14 +243,17 @@ export default class App extends Component {
     } else {
       // change the button to a pause mode when sound is on
       this.setState({
-        playPauseIcon: '../../includes/img/pause.png'
+        playPauseIcon: '../../includes/img/pause.svg'
       });
       if(this.state.counter < this.state.songsDetails.length - 1) {
         this.state.counter = chosenSong[0].id
       } else {
         this.state.counter = 0;
       }
-      this.changeProgress();
+      // show progress of playing current song (if input is not active, so give user possibility to efficiently drag indicator and rewind song)
+      if(document.activeElement == document.getElementsByClassName('player-container__progress')) {
+        this.changeProgress();
+      }
       this.state.audio.play();
       // set paused property to true to pause the song later
       this.state.paused = false;
@@ -272,6 +289,7 @@ export default class App extends Component {
     })
   }
 
+  // find song in the list according to user's search in input
   findSongInTheList(song) {
     const foundSong = this.state.songsDetails2.filter((item, index) => {
       if(item.name.toLowerCase().indexOf(song.toLowerCase()) > -1) {
