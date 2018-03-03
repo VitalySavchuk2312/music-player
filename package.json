@@ -2,6 +2,7 @@
   "name": "music-player",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://vitalysavchuk2312.github.io/music-player/",
   "dependencies": {
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
